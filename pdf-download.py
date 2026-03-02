@@ -12,6 +12,7 @@ import pypdf
 import os
 import urllib.request
 import concurrent.futures
+from datetime import datetime
 from glob import glob
 
 # Column with the links MUST be called 'Pdf_URL'
@@ -99,6 +100,11 @@ tasks = [
     for _, row in file.iterrows()
 ]
 
+# Fetch current DateTime to name the output textfile with
+currentDateTime = datetime.now().strftime("%B %d %Y, %H.%M.%S")
+textName = f"LOG - {currentDateTime}.txt"
+textOutput = open(f"{outputPath}/{textName}", "x")
+
 # Send it
 with concurrent.futures.ThreadPoolExecutor(max_workers = maxThreads) as executor:
     futures = [
@@ -106,7 +112,12 @@ with concurrent.futures.ThreadPoolExecutor(max_workers = maxThreads) as executor
         for url, ID in tasks
     ]
 
+    # Print logs in console, while also writing said logs into the output folder
     for future in concurrent.futures.as_completed(futures):
         print(future.result())
+
+        with open(f"{outputPath}/{textName}", "a") as f:
+            f.write(f"{future.result()}\n")
+        
 
 # Close program
