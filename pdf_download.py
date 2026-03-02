@@ -24,8 +24,8 @@ from glob import glob
 excelPath = r"C:\Users\Spac-23\Documents\GitHub\week4_pdf-downloader\GRI_2017_2020.xlsx"
 
 # Here, specify path for folder for downloads
-outputPath = r"C:\Users\Spac-23\Documents\GitHub\week4_pdf-downloader\output"
-downloadsPath = r"C:\Users\Spac-23\Documents\GitHub\week4_pdf-downloader\output\dwn"
+outputPath = r"C:\Users\Spac-23\Documents\Opgaver - Softwarespor\Uge 5\output"
+downloadsPath = r"C:\Users\Spac-23\Documents\Opgaver - Softwarespor\Uge 5\output\dwn"
 
 # Here, specify the name of the column with file IDs
 ID = 'BRnum'
@@ -85,39 +85,40 @@ def downloadPDF(downloadLink, fileID):
         return f"File {fileID}, Error: {str(e)}"
 
 
-# Open the file
-file = pd.read_excel(excelPath, sheet_name = 0)
-# ignore rows without URLs
-# fileCopy = file[file.Pdf_URL.notnull() == True]
+if __name__ == "__main__": # Needed for the program not to run when doing unit tests
+    # Open the file
+    file = pd.read_excel(excelPath, sheet_name = 0)
+    # ignore rows without URLs
+    # fileCopy = file[file.Pdf_URL.notnull() == True]
 
-# Check how many downloads the program is allowed to make
-if maxDownloads != None:
-    file = file.head(maxDownloads)
+    # Check how many downloads the program is allowed to make
+    if maxDownloads != None:
+        file = file.head(maxDownloads)
 
-# Organize the program's tasks neatly, we only need the ID and urls
-tasks = [
-    (row["Pdf_URL"], row[ID])
-    for _, row in file.iterrows()
-]
-
-# Fetch current DateTime to name the output textfile with
-currentDateTime = datetime.now().strftime("%B %d %Y, %H.%M.%S")
-textName = f"LOG - {currentDateTime}.txt"
-textOutput = open(f"{outputPath}/{textName}", "x")
-
-# Send it
-with concurrent.futures.ThreadPoolExecutor(max_workers = maxThreads) as executor:
-    futures = [
-        executor.submit(downloadPDF, url, ID)
-        for url, ID in tasks
+    # Organize the program's tasks neatly, we only need the ID and urls
+    tasks = [
+        (row["Pdf_URL"], row[ID])
+        for _, row in file.iterrows()
     ]
 
-    # Print logs in console, while also writing said logs into the output folder
-    for future in concurrent.futures.as_completed(futures):
-        print(future.result())
+    # Fetch current DateTime to name the output textfile with
+    currentDateTime = datetime.now().strftime("%B %d %Y, %H.%M.%S")
+    textName = f"LOG - {currentDateTime}.txt"
+    textOutput = open(f"{outputPath}/{textName}", "x")
 
-        with open(f"{outputPath}/{textName}", "a") as f:
-            f.write(f"{future.result()}\n")
-        
+    # Send it
+    with concurrent.futures.ThreadPoolExecutor(max_workers = maxThreads) as executor:
+        futures = [
+            executor.submit(downloadPDF, url, ID)
+            for url, ID in tasks
+        ]
 
-# Close program
+        # Print logs in console, while also writing said logs into the output folder
+        for future in concurrent.futures.as_completed(futures):
+            print(future.result())
+
+            with open(f"{outputPath}/{textName}", "a") as f:
+                f.write(f"{future.result()}\n")
+            
+
+    # Close program
