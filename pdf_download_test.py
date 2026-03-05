@@ -12,7 +12,6 @@ class test_validator(unittest.TestCase):
         instance.mo
 
 
-
 class test_download(unittest.TestCase):
     @patch('pd.isna')
     @patch('os.path.exists')
